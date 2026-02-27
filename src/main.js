@@ -116,7 +116,8 @@ function renderLog() {
 
 function renderHeatmap() {
   const container = document.getElementById('heatmap');
-  const weeks = 52;
+  const year = new Date().getFullYear();
+  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
   // Build date -> total reps map
   const repsMap = {};
@@ -128,20 +129,49 @@ function renderHeatmap() {
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-  const dayOfWeek = (today.getDay() + 6) % 7; // 0=Mon
 
-  const startDate = new Date(today);
-  startDate.setDate(startDate.getDate() - dayOfWeek - (weeks - 1) * 7);
+  // Start from the Monday on or before Jan 1
+  const jan1 = new Date(year, 0, 1);
+  const jan1Day = (jan1.getDay() + 6) % 7; // 0=Mon
+  const startDate = new Date(jan1);
+  startDate.setDate(startDate.getDate() - jan1Day);
+
+  // End on the Sunday on or after Dec 31
+  const dec31 = new Date(year, 11, 31);
+  const dec31Day = (dec31.getDay() + 6) % 7;
+  const endDate = new Date(dec31);
+  endDate.setDate(endDate.getDate() + (6 - dec31Day));
+
+  const totalDays = Math.round((endDate - startDate) / (1000 * 60 * 60 * 24)) + 1;
+  const weeks = Math.ceil(totalDays / 7);
 
   let html = '<div class="heatmap-grid">';
 
   // Day labels
   html += '<div class="heatmap-labels">';
+  html += '<div class="heatmap-month-spacer"></div>';
   html += '<div></div><div>Mon</div><div></div><div>Wed</div><div></div><div>Fri</div><div></div>';
   html += '</div>';
 
+  let lastMonth = -1;
+
   for (let w = 0; w < weeks; w++) {
+    // Determine month label for this week
+    let monthLabel = '';
+    for (let d = 0; d < 7; d++) {
+      const cellDate = new Date(startDate);
+      cellDate.setDate(cellDate.getDate() + w * 7 + d);
+      const m = cellDate.getMonth();
+      if (cellDate.getDate() <= 7 && m !== lastMonth && cellDate.getFullYear() === year) {
+        monthLabel = months[m];
+        lastMonth = m;
+        break;
+      }
+    }
+
     html += '<div class="heatmap-week">';
+    html += `<div class="heatmap-month-label">${monthLabel}</div>`;
+
     for (let d = 0; d < 7; d++) {
       const cellDate = new Date(startDate);
       cellDate.setDate(cellDate.getDate() + w * 7 + d);
@@ -150,14 +180,15 @@ function renderHeatmap() {
         String(cellDate.getDate()).padStart(2, '0');
 
       const reps = repsMap[dateStr] || 0;
-      const level = maxReps === 0 ? 0 :
+      const outsideYear = cellDate.getFullYear() !== year;
+      const level = maxReps === 0 || outsideYear ? 0 :
         reps === 0 ? 0 :
         reps <= maxReps * 0.25 ? 1 :
         reps <= maxReps * 0.5 ? 2 :
         reps <= maxReps * 0.75 ? 3 : 4;
 
-      const isFuture = cellDate > today;
-      html += `<div class="heatmap-cell${isFuture ? ' future' : ''}" data-level="${level}" title="${dateStr}: ${reps} reps"></div>`;
+      const hidden = cellDate > today || outsideYear;
+      html += `<div class="heatmap-cell${hidden ? ' future' : ''}" data-level="${level}" title="${dateStr}: ${reps} reps"></div>`;
     }
     html += '</div>';
   }

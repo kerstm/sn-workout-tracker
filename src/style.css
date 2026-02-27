@@ -191,6 +191,18 @@ td:last-child {
   gap: 3px;
 }
 
+.heatmap-month-spacer {
+  height: 14px;
+}
+
+.heatmap-month-label {
+  height: 14px;
+  font-size: 9px;
+  line-height: 14px;
+  color: var(--sn-stylekit-neutral-color, #888);
+  white-space: nowrap;
+}
+
 .heatmap-cell {
   width: 11px;
   height: 11px;
