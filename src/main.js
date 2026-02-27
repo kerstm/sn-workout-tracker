@@ -92,10 +92,63 @@ function renderLog() {
   }).join('');
 }
 
+function renderHeatmap() {
+  const container = document.getElementById('heatmap');
+  const weeks = 16;
+
+  // Build date -> total reps map
+  const repsMap = {};
+  for (const r of log) {
+    repsMap[r.date] = (repsMap[r.date] || 0) + r.reps;
+  }
+
+  const maxReps = Math.max(0, ...Object.values(repsMap));
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const dayOfWeek = (today.getDay() + 6) % 7; // 0=Mon
+
+  const startDate = new Date(today);
+  startDate.setDate(startDate.getDate() - dayOfWeek - (weeks - 1) * 7);
+
+  let html = '<div class="heatmap-grid">';
+
+  // Day labels
+  html += '<div class="heatmap-labels">';
+  html += '<div></div><div>Mon</div><div></div><div>Wed</div><div></div><div>Fri</div><div></div>';
+  html += '</div>';
+
+  for (let w = 0; w < weeks; w++) {
+    html += '<div class="heatmap-week">';
+    for (let d = 0; d < 7; d++) {
+      const cellDate = new Date(startDate);
+      cellDate.setDate(cellDate.getDate() + w * 7 + d);
+      const dateStr = cellDate.getFullYear() + '-' +
+        String(cellDate.getMonth() + 1).padStart(2, '0') + '-' +
+        String(cellDate.getDate()).padStart(2, '0');
+
+      const reps = repsMap[dateStr] || 0;
+      const level = maxReps === 0 ? 0 :
+        reps === 0 ? 0 :
+        reps <= maxReps * 0.25 ? 1 :
+        reps <= maxReps * 0.5 ? 2 :
+        reps <= maxReps * 0.75 ? 3 : 4;
+
+      const isFuture = cellDate > today;
+      html += `<div class="heatmap-cell${isFuture ? ' future' : ''}" data-level="${level}" title="${dateStr}: ${reps} reps"></div>`;
+    }
+    html += '</div>';
+  }
+
+  html += '</div>';
+  container.innerHTML = html;
+}
+
 function render() {
   renderLog();
   renderStats();
   renderExerciseOptions();
+  renderHeatmap();
 }
 
 // --- Save ---

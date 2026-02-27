@@ -164,6 +164,46 @@ td:last-child {
   padding-top: 14px;
 }
 
+.heatmap-grid {
+  display: flex;
+  gap: 3px;
+  margin-bottom: 16px;
+  overflow-x: auto;
+}
+
+.heatmap-labels {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.heatmap-labels div {
+  width: 24px;
+  height: 11px;
+  font-size: 9px;
+  line-height: 11px;
+  color: var(--sn-stylekit-neutral-color, #888);
+}
+
+.heatmap-week {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.heatmap-cell {
+  width: 11px;
+  height: 11px;
+  border-radius: 2px;
+}
+
+.heatmap-cell[data-level="0"] { background: #ebedf0; }
+.heatmap-cell[data-level="1"] { background: #9be9a8; }
+.heatmap-cell[data-level="2"] { background: #40c463; }
+.heatmap-cell[data-level="3"] { background: #30a14e; }
+.heatmap-cell[data-level="4"] { background: #216e39; }
+.heatmap-cell.future { visibility: hidden; }
+
 @media (prefers-color-scheme: dark) {
   body {
     --sn-stylekit-background-color: #1a1a1a;
@@ -174,6 +214,11 @@ td:last-child {
     background: var(--sn-stylekit-background-color);
     color: var(--sn-stylekit-foreground-color);
   }
+  .heatmap-cell[data-level="0"] { background: #161b22; }
+  .heatmap-cell[data-level="1"] { background: #0e4429; }
+  .heatmap-cell[data-level="2"] { background: #006d32; }
+  .heatmap-cell[data-level="3"] { background: #26a641; }
+  .heatmap-cell[data-level="4"] { background: #39d353; }
 }
 
 @media (max-width: 500px) {
