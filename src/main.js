@@ -55,9 +55,27 @@ function getExercises() {
 }
 
 function computeStats() {
-  const totalReps = log.reduce((s, r) => s + r.reps, 0);
-  const uniqueDays = new Set(log.map(r => r.date)).size;
-  return { totalReps, uniqueDays, totalSets: log.length };
+  const year = new Date().getFullYear();
+  const yearLog = log.filter(r => r.date.startsWith(String(year)));
+  const totalReps = yearLog.reduce((s, r) => s + r.reps, 0);
+  const uniqueDays = new Set(yearLog.map(r => r.date)).size;
+
+  // Current streak: consecutive days with workouts going back from today
+  const workoutDates = new Set(log.map(r => r.date));
+  let streak = 0;
+  const d = new Date();
+  d.setHours(0, 0, 0, 0);
+  while (true) {
+    const ds = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+    if (workoutDates.has(ds)) {
+      streak++;
+      d.setDate(d.getDate() - 1);
+    } else {
+      break;
+    }
+  }
+
+  return { totalReps, uniqueDays, totalSets: yearLog.length, streak, year };
 }
 
 // --- Rendering ---
@@ -69,9 +87,13 @@ function renderExerciseOptions() {
 }
 
 function renderStats() {
-  const { totalReps, uniqueDays, totalSets } = computeStats();
+  const { totalReps, uniqueDays, totalSets, streak, year } = computeStats();
   document.getElementById('stats').innerHTML =
-    `<span>${totalSets} sets</span><span>${totalReps.toLocaleString()} reps</span><span>${uniqueDays} days</span>`;
+    `<span>📊 ${year} Stats</span>` +
+    `<span>🔥 Streak: ${streak} day(s)</span>` +
+    `<span>📅 Workout Days: ${uniqueDays}</span>` +
+    `<span>💪 Total Exercises: ${totalSets}</span>` +
+    `<span>🔢 Total Reps: ${totalReps.toLocaleString()}</span>`;
 }
 
 function renderLog() {
@@ -94,7 +116,7 @@ function renderLog() {
 
 function renderHeatmap() {
   const container = document.getElementById('heatmap');
-  const weeks = 16;
+  const weeks = 52;
 
   // Build date -> total reps map
   const repsMap = {};
