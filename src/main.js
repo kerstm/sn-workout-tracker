@@ -60,11 +60,15 @@ function computeStats() {
   const totalReps = yearLog.reduce((s, r) => s + r.reps, 0);
   const uniqueDays = new Set(yearLog.map(r => r.date)).size;
 
-  // Current streak: consecutive days with workouts going back from today
+  // Current streak: consecutive days with workouts going back from today/yesterday
   const workoutDates = new Set(log.map(r => r.date));
   let streak = 0;
   const d = new Date();
   d.setHours(0, 0, 0, 0);
+  const todayStr = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+  if (!workoutDates.has(todayStr)) {
+    d.setDate(d.getDate() - 1);
+  }
   while (true) {
     const ds = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
     if (workoutDates.has(ds)) {
